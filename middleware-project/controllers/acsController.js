@@ -5,6 +5,7 @@ const app = express();
 const acsService = {
   startCall: () => {
     return {
+      success: true,
       callId: "mocked-call-123",
       message: "Call started successfully (mocked)"
     };
@@ -22,3 +23,4 @@ app.use("/acs", router);
 app.listen(3000, () => {
   console.log("🚀 Server running at http://localhost:3000");
 });
+
