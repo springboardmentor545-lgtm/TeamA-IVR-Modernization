@@ -1,29 +1,31 @@
-const express = require("express");
-const app = express();
-app.use(express.json()); // to parse JSON request body
+// controllers/acsController.js
 
-// 🔹 Service Layer (Mocked)
-const acsService = {
-  startCall: (data) => {
-    return {
-      success: true,
-      callId: data?.sessionId || "mocked-call-123",
-      message: "Call started successfully (mocked)"
-    };
-  },
-  stopCall: (data) => {
-    return {
-      success: true,
-      callId: data?.sessionId || "mocked-call-123",
-      message: "Call stopped successfully (mocked)"
-    };
-  },
-  sendDTMF: (data) => {
-    return {
-      success: true,
-      callId: data?.sessionId || "mocked-call-123",
-      tones: data?.tones || "1",
-      message: "DTMF tones sent successfully (mocked)"
-    };
-  }
-};
+// Mocked service layer (business logic)
+function startCall(sessionId) {
+  return {
+    success: true,
+    sessionId,
+    callId: "mocked-call-123",
+    message: Call started successfully (mocked) for ${sessionId}
+  };
+}
+
+function stopCall(sessionId) {
+  return {
+    success: true,
+    sessionId,
+    message: Call stopped successfully (mocked) for ${sessionId}
+  };
+}
+
+function sendDTMF(sessionId, digit) {
+  return {
+    success: true,
+    sessionId,
+    digit,
+    message: DTMF '${digit}' sent successfully (mocked) for ${sessionId}
+  };
+}
+
+// Export the functions
+module.exports = { startCall, stopCall, sendDTMF };
