@@ -1,0 +1,650 @@
+{
+  "info": {
+    "name": "TeamA IVR Modernization API",
+    "description": "Postman collection for IVR and ACS endpoints with comprehensive test cases",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "1.0.0"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "sessionId",
+      "value": "test-session-{{$randomInt}}",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "IVR Endpoints",
+      "item": [
+        {
+          "name": "IVR - Test Case 1: Input 1 (Balance)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Test Case 1: Input 1 → Balance response",
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has sessionId', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('sessionId');",
+                  "    pm.expect(jsonData.sessionId).to.be.a('string');",
+                  "});",
+                  "",
+                  "pm.test('Response contains balance information', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('responseText');",
+                  "    pm.expect(jsonData.responseText).to.include('balance');",
+                  "    pm.expect(jsonData.responseText).to.include('₹');",
+                  "});",
+                  "",
+                  "pm.test('Response time is less than 2000ms', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "});",
+                  "",
+                  "pm.test('Content-Type is application/json', function () {",
+                  "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sessionId\": \"{{sessionId}}\",\n  \"inputType\": \"dtmf\",\n  \"inputValue\": \"1\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/ivr",
+              "host": ["{{baseUrl}}"],
+              "path": ["ivr"]
+            },
+            "description": "Test Case 1: Send input 1 to get balance response"
+          }
+        },
+        {
+          "name": "IVR - Test Case 2: Input 2 (Transfer)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Test Case 2: Input 2 → Transfer response",
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has sessionId', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('sessionId');",
+                  "    pm.expect(jsonData.sessionId).to.be.a('string');",
+                  "});",
+                  "",
+                  "pm.test('Response contains transfer information', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('responseText');",
+                  "    pm.expect(jsonData.responseText).to.include('transfer');",
+                  "    pm.expect(jsonData.responseText).to.include('agent');",
+                  "});",
+                  "",
+                  "pm.test('Response time is less than 2000ms', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "});",
+                  "",
+                  "pm.test('Content-Type is application/json', function () {",
+                  "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sessionId\": \"{{sessionId}}\",\n  \"inputType\": \"dtmf\",\n  \"inputValue\": \"2\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/ivr",
+              "host": ["{{baseUrl}}"],
+              "path": ["ivr"]
+            },
+            "description": "Test Case 2: Send input 2 to get transfer response"
+          }
+        },
+        {
+          "name": "IVR - Negative Test: Invalid Input Value",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Negative Test: Invalid input value",
+                  "pm.test('Status code is 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Response contains error message', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('error');",
+                  "    pm.expect(jsonData.error).to.include('inputValue must be');",
+                  "});",
+                  "",
+                  "pm.test('Response time is less than 1000ms', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(1000);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sessionId\": \"{{sessionId}}\",\n  \"inputType\": \"dtmf\",\n  \"inputValue\": \"3\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/ivr",
+              "host": ["{{baseUrl}}"],
+              "path": ["ivr"]
+            },
+            "description": "Negative test: Send invalid input value (3) to test validation"
+          }
+        },
+        {
+          "name": "IVR - Negative Test: Missing Required Fields",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Negative Test: Missing required fields",
+                  "pm.test('Status code is 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Response contains error message', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('error');",
+                  "    pm.expect(jsonData.error).to.include('Missing required fields');",
+                  "});",
+                  "",
+                  "pm.test('Response time is less than 1000ms', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(1000);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sessionId\": \"{{sessionId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/ivr",
+              "host": ["{{baseUrl}}"],
+              "path": ["ivr"]
+            },
+            "description": "Negative test: Send request with missing required fields"
+          }
+        },
+        {
+          "name": "IVR - Negative Test: Empty Request Body",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Negative Test: Empty request body",
+                  "pm.test('Status code is 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Response contains error message', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('error');",
+                  "    pm.expect(jsonData.error).to.include('Missing required fields');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/ivr",
+              "host": ["{{baseUrl}}"],
+              "path": ["ivr"]
+            },
+            "description": "Negative test: Send empty request body"
+          }
+        }
+      ]
+    },
+    {
+      "name": "ACS Endpoints",
+      "item": [
+        {
+          "name": "ACS - Start Call",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// ACS Start Call Test",
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has success property', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('success');",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "});",
+                  "",
+                  "pm.test('Response contains call information', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('message');",
+                  "    pm.expect(jsonData.message).to.include('started');",
+                  "});",
+                  "",
+                  "pm.test('Response time is less than 2000ms', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "});",
+                  "",
+                  "pm.test('Content-Type is application/json', function () {",
+                  "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+                  "});",
+                  "",
+                  "// Store callId for later use",
+                  "const jsonData = pm.response.json();",
+                  "if (jsonData.callId) {",
+                  "    pm.collectionVariables.set('callId', jsonData.callId);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sessionId\": \"{{sessionId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/acs/start",
+              "host": ["{{baseUrl}}"],
+              "path": ["acs", "start"]
+            },
+            "description": "Start a call using ACS service"
+          }
+        },
+        {
+          "name": "ACS - Stop Call",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// ACS Stop Call Test",
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has success property', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('success');",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "});",
+                  "",
+                  "pm.test('Response contains stop information', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('message');",
+                  "    pm.expect(jsonData.message).to.include('stopped');",
+                  "});",
+                  "",
+                  "pm.test('Response time is less than 2000ms', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "});",
+                  "",
+                  "pm.test('Content-Type is application/json', function () {",
+                  "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sessionId\": \"{{sessionId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/acs/stop",
+              "host": ["{{baseUrl}}"],
+              "path": ["acs", "stop"]
+            },
+            "description": "Stop a call using ACS service"
+          }
+        },
+        {
+          "name": "ACS - Send DTMF",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// ACS Send DTMF Test",
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has success property', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('success');",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "});",
+                  "",
+                  "pm.test('Response contains DTMF information', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('message');",
+                  "    pm.expect(jsonData.message).to.include('DTMF');",
+                  "});",
+                  "",
+                  "pm.test('Response time is less than 2000ms', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "});",
+                  "",
+                  "pm.test('Content-Type is application/json', function () {",
+                  "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sessionId\": \"{{sessionId}}\",\n  \"digit\": \"1\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/acs/sendDTMF",
+              "host": ["{{baseUrl}}"],
+              "path": ["acs", "sendDTMF"]
+            },
+            "description": "Send DTMF tone using ACS service"
+          }
+        },
+        {
+          "name": "ACS - Negative Test: Missing sessionId",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// ACS Negative Test: Missing sessionId",
+                  "pm.test('Status code is 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Response contains error message', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('error');",
+                  "    pm.expect(jsonData.error).to.include('sessionId is required');",
+                  "});",
+                  "",
+                  "pm.test('Response time is less than 1000ms', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(1000);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/acs/start",
+              "host": ["{{baseUrl}}"],
+              "path": ["acs", "start"]
+            },
+            "description": "Negative test: Send request without sessionId"
+          }
+        },
+        {
+          "name": "ACS - Negative Test: Missing digit for DTMF",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// ACS Negative Test: Missing digit for DTMF",
+                  "pm.test('Status code is 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Response contains error message', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('error');",
+                  "    pm.expect(jsonData.error).to.include('sessionId and digit are required');",
+                  "});",
+                  "",
+                  "pm.test('Response time is less than 1000ms', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(1000);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sessionId\": \"{{sessionId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/acs/sendDTMF",
+              "host": ["{{baseUrl}}"],
+              "path": ["acs", "sendDTMF"]
+            },
+            "description": "Negative test: Send DTMF request without digit"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Integration Tests",
+      "item": [
+        {
+          "name": "Full IVR Flow: Input 1 → Balance → Start Call",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Integration Test: Full IVR Flow",
+                  "pm.test('IVR Input 1 returns balance', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.responseText).to.include('balance');",
+                  "});",
+                  "",
+                  "// Store sessionId for next request",
+                  "const jsonData = pm.response.json();",
+                  "pm.collectionVariables.set('integrationSessionId', jsonData.sessionId);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sessionId\": \"integration-test-{{$randomInt}}\",\n  \"inputType\": \"dtmf\",\n  \"inputValue\": \"1\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/ivr",
+              "host": ["{{baseUrl}}"],
+              "path": ["ivr"]
+            },
+            "description": "Step 1: Get balance response for input 1"
+          }
+        },
+        {
+          "name": "Full IVR Flow: Input 2 → Transfer → Start Call",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Integration Test: Full IVR Flow",
+                  "pm.test('IVR Input 2 returns transfer message', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.responseText).to.include('transfer');",
+                  "});",
+                  "",
+                  "// Store sessionId for next request",
+                  "const jsonData = pm.response.json();",
+                  "pm.collectionVariables.set('integrationSessionId', jsonData.sessionId);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sessionId\": \"integration-test-{{$randomInt}}\",\n  \"inputType\": \"dtmf\",\n  \"inputValue\": \"2\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/ivr",
+              "host": ["{{baseUrl}}"],
+              "path": ["ivr"]
+            },
+            "description": "Step 1: Get transfer response for input 2"
+          }
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Global pre-request script",
+          "console.log('Starting request to:', pm.request.url);",
+          "console.log('Request method:', pm.request.method);"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Global test script",
+          "pm.test('Response time is reasonable', function () {",
+          "    pm.expect(pm.response.responseTime).to.be.below(5000);",
+          "});",
+          "",
+          "pm.test('Response is valid JSON', function () {",
+          "    pm.response.to.be.json;",
+          "});"
+        ]
+      }
+    }
+  ]
+}

@@ -22,10 +22,10 @@ module.exports = {
 
       
       if (inputValue === "2") {
-        const result = await acsService.startCall(sessionId);
+        const result = await bapService.handleInput(sessionId, inputType, inputValue);
         return {
           sessionId,
-          responseText: result.message
+          responseText: result.responseText
         };
       }
 

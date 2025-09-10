@@ -6,7 +6,7 @@ module.exports = {
     await delay(70);
     const val = (typeof inputValue === 'string') ? inputValue.trim() : String(inputValue);
 
-    if (inputType === 'DTMF') {
+    if (inputType && inputType.toUpperCase() === 'DTMF') {
       if (val === '1') {
         return { success: true, sessionId, intent: 'GetBalance', responseText: 'Your account balance is ₹5,000.00', nextAction: null };
       } else if (val === '2') {

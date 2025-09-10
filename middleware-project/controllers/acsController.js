@@ -6,7 +6,7 @@ function startCall(sessionId) {
     success: true,
     sessionId,
     callId: "mocked-call-123",
-    message: Call started successfully (mocked) for ${sessionId}
+    message: `Call started successfully (mocked) for ${sessionId}`
   };
 }
 
@@ -14,7 +14,7 @@ function stopCall(sessionId) {
   return {
     success: true,
     sessionId,
-    message: Call stopped successfully (mocked) for ${sessionId}
+    message: `Call stopped successfully (mocked) for ${sessionId}`
   };
 }
 
@@ -23,7 +23,7 @@ function sendDTMF(sessionId, digit) {
     success: true,
     sessionId,
     digit,
-    message: DTMF '${digit}' sent successfully (mocked) for ${sessionId}
+    message: `DTMF '${digit}' sent successfully (mocked) for ${sessionId}`
   };
 }
 
