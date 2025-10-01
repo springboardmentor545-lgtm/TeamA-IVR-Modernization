@@ -1,91 +1,128 @@
-# Middleware Project
+# Conversational IVR Modernisation  
+**Conversational Middleware – Milestone 3**  
 
-This folder contains the core Express.js middleware and routing logic for the TeamA IVR Modernization initiative. It exposes endpoints for both IVR (Interactive Voice Response) and ACS (Automated Call System) flows, integrates with the main app, and includes comprehensive test documentation.
+---
 
-## Table of Contents
-- [Overview](#overview)
-- [Project Structure](#project-structure)
-- [Installation](#installation)
-- [Usage](#usage)
-- [Endpoints](#endpoints)
-- [Testing](#testing)
-- [Test Cases Reference](#test-cases-reference)
-- [Dependencies](#dependencies)
-- [License](#license)
+## Team A Members
+- Bhargav Molleti
+- Animesh Mondal
+- Prachi Saxena
+- Karnika 
+- Vinay Kumar
+- Shifa
+- Amita
+- Amshula
+- Sumedha Kar  
+- Nithya
+- Abilash
 
-## Overview
+---
 
-This middleware exposes REST APIs for IVR and ACS integration, handling request routing, input validation, and automated test scenarios. It is designed to serve as the central communication layer between the frontend IVR interface and backend services.
+## Introduction and Overview
+
+In **Milestone 3**, the project goal was to extend our IVR modernization middleware with **conversational capabilities**. Traditional IVR systems mainly rely on DTMF (Dual Tone Multi Frequency) inputs, which can feel restrictive for users. Our objective was to allow natural language interactions (typed or voice-transcribed queries), creating a system that is more user-friendly and scalable for future AI upgrades.  
+
+To achieve this, we:  
+- Introduced a new endpoint `/ivr/conversation`.  
+- Built an **intent detection module** to route queries intelligently.  
+- Enhanced **ACS (Account Control Service)** and **BAP (Business Agent Platform)** mock services to support conversational requests.  
+- Implemented fallback responses for unsupported queries.  
+- Validated functionality with positive, negative, and fallback test cases.  
+
+This milestone represents a shift from a **menu-driven IVR system** to a **modern conversational middleware framework**.  
+
+---
+
+## System Architecture
+
+![alt text](architechture.png) 
+
+**Explanation:**  
+- User queries are received by the **Middleware**.  
+- Middleware forwards queries to the **Intent Detection** module.  
+- Based on detected intent:  
+  - **ACS** handles account-related queries (balance, recharge, card operations).  
+  - **BAP** handles agent or transactional queries (mini statement, loans, utility bills).  
+  - **Fallback** safely handles unsupported or unknown queries.  
+- Responses are returned through the Middleware back to the User.  
+
+This modular design ensures **clear routing, scalability, and future readiness** for AI-powered NLU integration.  
+
+---
 
 ## Project Structure
 
-```
 middleware-project/
 │
-├── index.js                        # Main Express app entry point
-├── package.json                    # Project manifest and scripts
-├── package-lock.json               # Dependency lock file
-├── TeamA-IVR-API.postman_collection.json # Postman collection for endpoint testing
-├── TEST_CASES_DOCUMENTATION.md     # Details and expected outcomes for all API test cases
+├── index.js # Main Express app entry point
+├── package.json # Project manifest and scripts
 ├── routes/
-│   ├── acsRoutes.js                # ACS endpoint routing logic (not shown here)
-│   └── ivrRoutes.js                # IVR endpoint routing logic (not shown here)
-└── ... (other supporting files)
-```
+│ ├── ivrRoutes.js # IVR + /ivr/conversation routing
+│ ├── acsRoutes.js # ACS endpoint routing
+├── controllers/
+│ ├── ivrController.js # IVR & conversation handling
+│ ├── acsController.js # ACS call management
+├── services/
+│ ├── acsService.js # Mock ACS services
+│ ├── bapService.js # Mock BAP services
+├── handlers/
+│ └── intentHandler.js # Intent detection (keyword-based)
+├── docs/
+│ ├── API.md # Detailed API documentation
+│ └── architecture.png # System flow diagram
+└── tests/
+└── postman_collection.json # Automated QA test cases
 
-## Installation
 
-You must have [Node.js](https://nodejs.org/) installed.
 
-```bash
-cd middleware-project
-npm install
-```
-
-## Usage
-
-Start the middleware server:
-```bash
-npm start
-```
-Or for development with hot-reload:
-```bash
-npm run dev
-```
-By default, the server runs on port `3000`. You can override this by setting the `PORT` environment variable.
+---
 
 ## Endpoints
 
 ### IVR Endpoints
-- `POST /ivr`
-  - Handles DTMF input for balance inquiry and agent transfer.
-  - See test cases in [TEST_CASES_DOCUMENTATION.md](./TEST_CASES_DOCUMENTATION.md).
+- `POST /ivr`  
+  Handles traditional IVR input (DTMF).  
 
 ### ACS Endpoints
-- `POST /acs`
-  - Handles call initiation, termination, and DTMF tone transmission.
-  - See test cases in [TEST_CASES_DOCUMENTATION.md](./TEST_CASES_DOCUMENTATION.md).
+- `POST /acs/start`  
+- `POST /acs/stop`  
+- `POST /acs/sendDTMF`  
+
+### Conversational Endpoint
+- `POST /ivr/conversation`  
+  - Accepts user queries in natural language.  
+  - Routes them to **ACS** or **BAP** depending on detected intent.  
+  - Returns structured JSON response.  
+
+---
 
 ## Testing
 
-- Use [TeamA-IVR-API.postman_collection.json](./TeamA-IVR-API.postman_collection.json) for automated API tests in Postman.
-- Test scripts validate correct responses, error handling, and response times.
-- See [TEST_CASES_DOCUMENTATION.md](./TEST_CASES_DOCUMENTATION.md) for expected inputs and outputs.
+- Postman collection (`postman_collection.json`) covers:  
+  - **Positive flows** – balance inquiry, recharge, loan details, agent requests.  
+  - **Negative flows** – missing fields, invalid input, empty body.  
+  - **Fallback flows** – unsupported queries like “play music”.  
+
+---
 
 ## Test Cases Reference
 
-- **Positive Tests:** Balance inquiry, agent transfer, ACS call management.
-- **Negative Tests:** Invalid inputs, missing required fields, empty requests.
-- **Integration Tests:** Full IVR-to-ACS flow scenarios.
+- **Positive Tests:** ACS (balance, recharge, card ops), BAP (mini statement, utility bill, loans, e-statement).  
+- **Negative Tests:** Missing `sessionId`, missing `query`, empty request body.  
+- **Fallback Tests:** Unknown queries are safely handled with a polite error message.  
+
+---
 
 ## Dependencies
 
-- [express](https://www.npmjs.com/package/express)
-- [body-parser](https://www.npmjs.com/package/body-parser)
-- [nodemon](https://www.npmjs.com/package/nodemon) (dev)
+- express  
+- body-parser  
+- nodemon (dev)  
 
-See [package.json](./package.json) for details.
+All dependencies are declared in `package.json`.  
+
+---
 
 ## License
 
-This project is licensed under ISC. See [package.json](./package.json) for more.
+This project is licensed under **ISC**.  
