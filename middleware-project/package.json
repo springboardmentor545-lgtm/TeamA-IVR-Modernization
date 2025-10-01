@@ -13,6 +13,10 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+<<<<<<< HEAD
+=======
+    "axios": "^1.12.2",
+>>>>>>> 32b3f2bde6f45b607feb5d1e28aa07052bfe0387
     "body-parser": "^2.2.0",
     "express": "^5.1.0"
   },
