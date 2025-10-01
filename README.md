@@ -35,7 +35,8 @@ This milestone represents a shift from a **menu-driven IVR system** to a **moder
 
 ## System Architecture
 
-![alt text](architechture.png) 
+![Diagram](middleware-project\docs\architechture.png)
+
 
 **Explanation:**  
 - User queries are received by the **Middleware**.  
