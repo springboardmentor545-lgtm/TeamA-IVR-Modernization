@@ -1,0 +1,29 @@
+* { box-sizing: border-box; }
+body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 0; background: #0b1020; color: #e6eefc; }
+.container { max-width: 900px; margin: 0 auto; padding: 24px; }
+h1 { margin: 0 0 8px; font-size: 28px; }
+.subtitle { margin: 0 0 24px; color: #b6c2e0; }
+section { margin: 16px 0 24px; }
+.card { background: #121830; border: 1px solid #1f2742; border-radius: 10px; padding: 16px; box-shadow: 0 4px 10px rgba(0,0,0,0.25); }
+label { display: block; margin: 10px 0; color: #cfd9f7; }
+input, select { width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid #2a355a; background: #0f1428; color: #e6eefc; }
+.row { display: flex; gap: 8px; align-items: center; margin: 8px 0; }
+button { background: #3b82f6; color: white; border: none; padding: 10px 14px; border-radius: 8px; cursor: pointer; }
+button:hover { background: #2563eb; }
+.result { background: #0f1428; border: 1px solid #2a355a; border-radius: 8px; padding: 12px; margin-top: 12px; min-height: 52px; white-space: pre-wrap; }
+footer { margin-top: 24px; color: #8ea0d0; font-size: 12px; }
+
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: #f8fafc;
+}
+
+.keypad-btn {
+  transition: all 0.2s ease-in-out;
+}
+
+.keypad-btn:hover {
+  transform: translateY(-4px) scale(1.05);
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+}

@@ -381,7 +381,7 @@
               "const json = (() => { try { return pm.response.json(); } catch(e){ return {}; } })();",
               "pm.test(\"Error mentions sessionId\", () => {",
               "  const err = JSON.stringify(json).toLowerCase();",
-              "  pm.expect(err).to.include('sessionid').or.include('session id');",
+              "  pm.expect(err).to.satisfy(s => s.includes('sessionid') || s.includes('session id'));",
               "});"
             ]
           }

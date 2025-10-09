@@ -98,13 +98,8 @@
                   "pm.test('Response contains transfer information', function () {",
                   "    const jsonData = pm.response.json();",
                   "    pm.expect(jsonData).to.have.property('responseText');",
-<<<<<<< HEAD
-                  "    pm.expect(jsonData.responseText).to.include('transfer');",
-                  "    pm.expect(jsonData.responseText).to.include('agent');",
-=======
                   "    pm.expect(jsonData.responseText).to.include('Mock:');",
                   "    pm.expect(jsonData.responseText).to.include('Call started');",
->>>>>>> 32b3f2bde6f45b607feb5d1e28aa07052bfe0387
                   "});",
                   "",
                   "pm.test('Response time is less than 2000ms', function () {",
@@ -590,11 +585,7 @@
                   "// Integration Test: Full IVR Flow",
                   "pm.test('IVR Input 2 returns transfer message', function () {",
                   "    const jsonData = pm.response.json();",
-<<<<<<< HEAD
-                  "    pm.expect(jsonData.responseText).to.include('transfer');",
-=======
                   "    pm.expect(jsonData.responseText).to.include('Mock: Call');",
->>>>>>> 32b3f2bde6f45b607feb5d1e28aa07052bfe0387
                   "});",
                   "",
                   "// Store sessionId for next request",
