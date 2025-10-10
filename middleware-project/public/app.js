@@ -377,7 +377,26 @@ async function agentConnect(sessionId) {
         nlpResultContainer.classList.remove('hidden');
         const result = await handleQuery(sessionId, queryOrIntent);
         displayResult(nlpResultEl, result);
+        
+        // Add to chat history - only store user-friendly text, not intent codes
+        let queryText;
+        if (typeof queryOrIntent === 'string' && queryOrIntent.startsWith('ACS_')) {
+          // If it's an intent code, get the button text instead
+          const button = document.querySelector(`[data-intent="${queryOrIntent}"]`);
+          queryText = button ? button.textContent.trim() : queryOrIntent;
+        } else {
+          // Use the actual query text
+          queryText = queryOrIntent || nlpQueryInput.value.trim();
+        }
+        
+        const responseText = result?.data?.message || result?.error?.message || 'No response';
+        if (window.addToChatHistory) {
+          window.addToChatHistory(queryText, responseText);
+        }
       };
+
+      // Make processQuery globally accessible
+      window.processQuery = processQuery;
 
       // --- Event Listeners ---
       
@@ -431,35 +450,16 @@ async function agentConnect(sessionId) {
         recognition.start();
       });
 
-      // Example inside your app.js (frontend, not Node backend)
-
-// This runs when you receive the response from your backend
-async function handleQueryResponse(responseText) {
-  const responseDiv = document.getElementById('response');
-  responseDiv.innerText = responseText;
-
-  // ✅ Automatically read out the response
-  const utterance = new SpeechSynthesisUtterance(responseText);
-  utterance.lang = 'en-IN'; // or 'en-US' depending on your accent preference
-  utterance.pitch = 1; // 0–2
-  utterance.rate = 1;  // 0.5–2
+      // Helper function for text-to-speech
+const speakText = (text) => {
+  if (!text) return;
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = 'en-US';
+  utterance.pitch = 1;
+  utterance.rate = 1;
   utterance.volume = 1;
-  speechSynthesis.speak(utterance);
-}
-
-// Example usage when a user sends a query
-document.getElementById('btn-send').addEventListener('click', async () => {
-  const query = document.getElementById('query-input').value;
-  
-  const res = await fetch('/ivr/conversation', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ query }),
-  });
-
-  const data = await res.json();
-  handleQueryResponse(data.response || 'No response from server');
-});
+  window.speechSynthesis.speak(utterance);
+};
 
 
       // TTS: Read last conversation response
@@ -467,12 +467,10 @@ document.getElementById('btn-send').addEventListener('click', async () => {
         const resultText = nlpResultEl.textContent.trim();
         if (!resultText || resultText === 'Processing...') {
           const fallback = nlpQueryInput.value || 'Please enter a query first, or ask a question.';
-          window.speechSynthesis.speak(new SpeechSynthesisUtterance(fallback));
+          speakText(fallback);
           return;
         }
-        const utter = new SpeechSynthesisUtterance(resultText);
-        utter.lang = 'en-US';
-        window.speechSynthesis.speak(utter);
+        speakText(resultText);
       });
 
       // Initialize with a session ID

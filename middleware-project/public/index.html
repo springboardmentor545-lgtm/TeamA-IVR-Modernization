@@ -27,14 +27,17 @@ animation: pulse-dark 1.5s infinite;
 </style>
 </head>
 
-<body class="bg-black text-slate-200 min-h-screen flex items-center justify-center p-4">
-<div class="container mx-auto max-w-2xl w-full">
+<body class="bg-black text-slate-200 min-h-screen p-4">
+<div class="container mx-auto max-w-7xl w-full">
 <header class="text-center mb-10">
 <h1 class="text-4xl sm:text-5xl font-bold font-family-oxanium text-white">Conversational IVR System</h1>
 <p class="mt-2 text-lg text-purple-300/80">Interact with our banking assistant using your voice or by typing.</p>
 </header>
 
 <main>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <!-- Main Content Column -->
+  <div class="lg:col-span-2">
 <section>
 <div class="bg-slate-900/50 backdrop-blur-md rounded-2xl border border-purple-500/30 p-6 glow-shadow">
 <label for="nlp-session" class="block text-sm font-medium font-family-oxanium text-slate-400">Session ID (auto-generated)</label>
@@ -55,71 +58,6 @@ animation: pulse-dark 1.5s infinite;
 <div id="loader" class="hidden animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-purple-400"></div>
 </div>
 </div>
-<div id="chat-history-section" class="mt-8 pt-6 border-t border-purple-500/20">
-  <div class="flex justify-between items-center mb-2">
-    <h3 class="text-sm font-medium text-slate-400">History</h3>
-    <button id="clear-history-btn" class="text-xs text-purple-400 hover:text-purple-300 transition-colors flex items-center gap-1">
-      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
-        <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
-        <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
-      </svg>
-      Clear
-    </button>
-  </div>
-  <div id="chat-history" class="max-h-40 overflow-y-auto p-3 bg-black/20 rounded-lg border border-slate-700 space-y-3">
-    <!-- History items will be injected here -->
-  </div>
-</div>
-<script>
-const chatHistoryEl = document.getElementById('chat-history');
-const clearHistoryBtn = document.getElementById('clear-history-btn');
-let chatHistory = JSON.parse(localStorage.getItem('chatHistory') || '[]');
-
-function renderChatHistory() {
-  chatHistoryEl.innerHTML = '';
-  if (chatHistory.length === 0) {
-    chatHistoryEl.innerHTML = '<div class="text-xs text-slate-500 text-center">No history yet.</div>';
-    return;
-  }
-  chatHistory.forEach(item => {
-    const div = document.createElement('div');
-    div.className = "bg-slate-800/60 rounded p-2";
-    div.innerHTML = `<div class="text-purple-300 text-xs mb-1">You: ${item.query}</div>
-      <div class="text-slate-200 text-xs">Bot: ${item.response}</div>`;
-    chatHistoryEl.appendChild(div);
-  });
-}
-
-function addToChatHistory(query, response) {
-  chatHistory.push({ query, response });
-  if (chatHistory.length > 20) chatHistory.shift(); // keep last 20
-  localStorage.setItem('chatHistory', JSON.stringify(chatHistory));
-  renderChatHistory();
-}
-
-clearHistoryBtn.addEventListener('click', () => {
-  chatHistory = [];
-  localStorage.removeItem('chatHistory');
-  renderChatHistory();
-});
-
-renderChatHistory();
-
-// Hook into processQuery to store history
-window.processQuery = (function(origFn) {
-  return function(query, intent) {
-    showLoader();
-    // Simulate async response (replace with your actual logic)
-    setTimeout(() => {
-      // Replace with actual response logic
-      const response = "Sample response for: " + query;
-      displayResult(response);
-      addToChatHistory(query, response);
-      hideLoader();
-    }, 800);
-  };
-})(window.processQuery || function(query, intent) {});
-</script>
 
 <label class="block text-sm font-medium text-slate-400 mt-6">Quick Actions</label>
 <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 mt-2">
@@ -137,7 +75,28 @@ window.processQuery = (function(origFn) {
 </div>
 </div>
 </section>
-
+  </div>
+  
+  <!-- History Column -->
+  <div class="lg:col-span-1">
+    <div class="bg-slate-900/50 backdrop-blur-md rounded-2xl border border-purple-500/30 p-6 glow-shadow h-fit">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-medium text-slate-400">History</h3>
+        <button id="clear-history-btn" class="text-sm text-purple-400 hover:text-purple-300 transition-colors flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
+            <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
+          </svg>
+          Clear
+        </button>
+      </div>
+      <div id="chat-history" class="max-h-96 overflow-y-auto p-3 bg-black/20 rounded-lg border border-slate-700 space-y-3">
+        <!-- History items will be injected here -->
+      </div>
+    </div>
+  </div>
+</div>
+</main>
 
 <footer class="text-center mt-10 pt-6 border-t border-slate-700">
 <p class="text-sm text-slate-500">A demonstration of modernizing legacy IVR systems.</p>
@@ -145,109 +104,58 @@ window.processQuery = (function(origFn) {
 </div>
 
 <script>
+// Chat History Management
+let chatHistory = JSON.parse(localStorage.getItem('chatHistory') || '[]');
+
+function renderChatHistory() {
+  const chatHistoryEl = document.getElementById('chat-history');
+  if (!chatHistoryEl) {
+    console.error('Chat history element not found');
+    return;
+  }
+  
+  chatHistoryEl.innerHTML = '';
+  if (chatHistory.length === 0) {
+    chatHistoryEl.innerHTML = '<div class="text-sm text-slate-500 text-center py-8">No history yet.</div>';
+    return;
+  }
+  chatHistory.forEach(item => {
+    const div = document.createElement('div');
+    div.className = "bg-slate-800/60 rounded-lg p-3 border border-slate-700/50";
+    div.innerHTML = `<div class="text-purple-300 text-sm font-medium mb-2">You: ${item.query}</div>
+      <div class="text-slate-200 text-sm">Bot: ${item.response}</div>`;
+    chatHistoryEl.appendChild(div);
+  });
+}
+
+function addToChatHistory(query, response) {
+  chatHistory.push({ query, response });
+  if (chatHistory.length > 20) chatHistory.shift(); // keep last 20
+  localStorage.setItem('chatHistory', JSON.stringify(chatHistory));
+  renderChatHistory();
+}
+
+// Make addToChatHistory globally accessible
+window.addToChatHistory = addToChatHistory;
+
+// Initialize chat history when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-const sessionInput = document.getElementById('nlp-session');
-const queryInput = document.getElementById('nlp-query');
-const sendButton = document.getElementById('btn-nlp');
-const speakButton = document.getElementById('btn-stt');
-const readButton = document.getElementById('btn-tts');
-const resultContainer = document.getElementById('nlp-result-container');
-const resultEl = document.getElementById('nlp-result');
-const loader = document.getElementById('loader');
-const quickActionButtons = document.querySelectorAll('.keypad-btn');
-
-let sessionId = `sess-${Date.now()}-${Math.random().toString(36).substring(2, 10)}`;
-sessionInput.value = sessionId;
-
-const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-let recognition;
-if (SpeechRecognition) {
-recognition = new SpeechRecognition();
-recognition.continuous = false;
-recognition.lang = 'en-US';
-recognition.interimResults = false;
-recognition.maxAlternatives = 1;
-}
-
-const speakText = (text) => {
-	if (!text) return;
-	const utterance = new SpeechSynthesisUtterance(text);
-	utterance.lang = 'en-US';
-	window.speechSynthesis.speak(utterance);
-};
-
-const displayResult = (text) => {
-	hideLoader();
-	resultEl.textContent = text;
-	resultEl.classList.remove('text-white');
-	speakText(text); // 🔊 Also speaks response automatically
-};
-
-const showLoader = () => {
-resultEl.textContent = '';
-loader.classList.remove('hidden');
-resultContainer.classList.remove('hidden');
-};
-
-const hideLoader = () => {
-loader.classList.add('hidden');
-};
-
-/* Duplicate SpeakOutputAutomatically function removed to fix redeclaration error */
-
-const displayError = (errorMsg) => {
-hideLoader();
-const text = `Error: ${errorMsg}`;
-resultEl.textContent = text;
-resultEl.classList.add('text-white');
-speakText(text); // 🔊 Also speaks error message automatically
-};
-
-sendButton.addEventListener('click', () => processQuery(queryInput.value));
-queryInput.addEventListener('keydown', (e) => {
-if (e.key === 'Enter') processQuery(queryInput.value);
+  const clearHistoryBtn = document.getElementById('clear-history-btn');
+  if (clearHistoryBtn) {
+    clearHistoryBtn.addEventListener('click', () => {
+      chatHistory = [];
+      localStorage.removeItem('chatHistory');
+      renderChatHistory();
+    });
+  }
+  
+  // Clear any existing duplicate history entries
+  chatHistory = [];
+  localStorage.removeItem('chatHistory');
+  
+  // Initial render
+  renderChatHistory();
 });
-
-if (recognition) {
-speakButton.addEventListener('click', () => {
-speakButton.classList.add('speaking-btn');
-speakButton.disabled = true;
-recognition.start();
-});
-
-recognition.onresult = (e) => {
-const transcript = e.results[0][0].transcript;
-queryInput.value = transcript;
-processQuery(transcript);
-};
-
-recognition.onerror = (e) => {
-displayError(`Speech recognition error: ${e.error}`);
-};
-
-recognition.onend = () => {
-speakButton.classList.remove('speaking-btn');
-speakButton.disabled = false;
-};
-} else {
-speakButton.disabled = true;
-speakButton.innerHTML = "Speech Not Supported";
-}
-
-readButton.addEventListener('click', () => {
-const text = resultEl.textContent;
-if (text) speakText(text);
-});
-
-quickActionButtons.forEach(button => {
-button.addEventListener('click', () => {
-const intent = button.dataset.intent;
-const queryText = button.textContent;
-queryInput.value = queryText;
-processQuery(queryText, intent);
-});
-});
-}); // <-- Add this closing curly brace to end the DOMContentLoaded function
 </script>
 <script src="./app.js"></script>
 </body>
