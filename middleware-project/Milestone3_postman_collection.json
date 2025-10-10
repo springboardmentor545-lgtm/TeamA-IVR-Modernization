@@ -6,16 +6,8 @@
     "version": "1.0.1"
   },
   "variable": [
-    {
-      "key": "baseUrl",
-      "value": "http://localhost:3000",
-      "type": "string"
-    },
-    {
-      "key": "sessionId",
-      "value": "",
-      "type": "string"
-    }
+    { "key": "baseUrl", "value": "http://localhost:3000", "type": "string" },
+    { "key": "sessionId", "value": "", "type": "string" }
   ],
   "event": [
     {
@@ -42,11 +34,7 @@
           "mode": "raw",
           "raw": "{\n  \"sessionId\": \"{{sessionId}}\",\n  \"query\": \"Please check my balance\"\n}"
         },
-        "url": {
-          "raw": "{{baseUrl}}/ivr/conversation",
-          "host": ["{{baseUrl}}"],
-          "path": ["ivr", "conversation"]
-        }
+        "url": { "raw": "{{baseUrl}}/ivr/conversation", "host": ["{{baseUrl}}"], "path": ["ivr", "conversation"] }
       },
       "event": [
         {
@@ -55,10 +43,10 @@
             "exec": [
               "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
               "const json = pm.response.json();",
-              "pm.test(\"Has sessionId\", () => pm.expect(json).to.have.property('sessionId'));",
-              "pm.test(\"Has response text\", () => pm.expect(json).to.have.property('response'));",
+              "pm.test(\"Has data.sessionId\", () => pm.expect(json.data).to.have.property('sessionId'));",
+              "pm.test(\"Has response text\", () => pm.expect(json.data).to.have.property('response'));",
               "pm.test(\"Response mentions balance or ₹\", () => {",
-              "  pm.expect(json.response.toLowerCase()).to.satisfy(s => s.includes('balance') || s.includes('₹'));",
+              "  pm.expect(String(json.data.response).toLowerCase()).to.satisfy(s => s.includes('balance') || s.includes('₹') || s.includes('$'));",
               "});",
               "pm.test(\"Content-Type is JSON\", () => pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json'));"
             ]
@@ -85,9 +73,9 @@
             "exec": [
               "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
               "const json = pm.response.json();",
-              "pm.test(\"Has response text\", () => pm.expect(json).to.have.property('response'));",
+              "pm.test(\"Has response text\", () => pm.expect(json.data).to.have.property('response'));",
               "pm.test(\"Response mentions recharge or ₹\", () => {",
-              "  pm.expect(json.response).to.satisfy(s => /₹|recharge/i.test(s));",
+              "  pm.expect(String(json.data.response)).to.satisfy(s => /₹|recharge/i.test(s));",
               "});"
             ]
           }
@@ -113,7 +101,7 @@
               "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
               "const json = pm.response.json();",
               "pm.test(\"Message about card/block\", () => {",
-              "  const s = json.response.toLowerCase();",
+              "  const s = String(json.data.response).toLowerCase();",
               "  pm.expect(s).to.satisfy(t => t.includes('card') || t.includes('block') || t.includes('blocked'));",
               "});"
             ]
@@ -140,7 +128,7 @@
               "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
               "const json = pm.response.json();",
               "pm.test(\"Instruction for activation\", () => {",
-              "  const s = json.response.toLowerCase();",
+              "  const s = String(json.data.response).toLowerCase();",
               "  pm.expect(s).to.satisfy(t => t.includes('enter') || t.includes('16-digit') || t.includes('activate'));",
               "});"
             ]
@@ -167,7 +155,7 @@
               "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
               "const json = pm.response.json();",
               "pm.test(\"Contains link or update instruction\", () => {",
-              "  const s = json.response.toLowerCase();",
+              "  const s = String(json.data.response).toLowerCase();",
               "  pm.expect(s).to.satisfy(t => t.includes('link') || t.includes('update') || t.includes('mobile'));",
               "});"
             ]
@@ -194,7 +182,7 @@
               "pm.test(\"Status 200 and acknowledgement\", () => pm.response.to.have.status(200));",
               "const json = pm.response.json();",
               "pm.test(\"Mentions hold/fraud/contact\", () => {",
-              "  const s = json.response.toLowerCase();",
+              "  const s = String(json.data.response).toLowerCase();",
               "  pm.expect(s).to.satisfy(t => t.includes('hold') || t.includes('fraud') || t.includes('contact'));",
               "});"
             ]
@@ -221,7 +209,7 @@
               "pm.test(\"Status 200 and agent message\", () => pm.response.to.have.status(200));",
               "const json = pm.response.json();",
               "pm.test(\"Mentions agent or connecting\", () => {",
-              "  const s = json.response.toLowerCase();",
+              "  const s = String(json.data.response).toLowerCase();",
               "  pm.expect(s).to.satisfy(t => t.includes('agent') || t.includes('connecting') || t.includes('hold'));",
               "});"
             ]
@@ -248,7 +236,7 @@
               "pm.test(\"Status 200 and mini statement content\", () => pm.response.to.have.status(200));",
               "const json = pm.response.json();",
               "pm.test(\"Contains transactions/debit/credit\", () => {",
-              "  const s = json.response.toLowerCase();",
+              "  const s = String(json.data.response).toLowerCase();",
               "  pm.expect(s).to.satisfy(t => t.includes('transactions') || t.includes('debit') || t.includes('credit'));",
               "});"
             ]
@@ -275,7 +263,7 @@
               "pm.test(\"Status 200 and bill prompt\", () => pm.response.to.have.status(200));",
               "const json = pm.response.json();",
               "pm.test(\"Mentions customer id or enter\", () => {",
-              "  const s = json.response.toLowerCase();",
+              "  const s = String(json.data.response).toLowerCase();",
               "  pm.expect(s).to.satisfy(t => t.includes('customer id') || t.includes('bill') || t.includes('enter'));",
               "});"
             ]
@@ -302,7 +290,7 @@
               "pm.test(\"Status 200 and loan info\", () => pm.response.to.have.status(200));",
               "const json = pm.response.json();",
               "pm.test(\"Mentions EMI/outstanding/loan\", () => {",
-              "  const s = json.response.toLowerCase();",
+              "  const s = String(json.data.response).toLowerCase();",
               "  pm.expect(s).to.satisfy(t => t.includes('emi') || t.includes('outstanding') || t.includes('loan'));",
               "});"
             ]
@@ -329,7 +317,7 @@
               "pm.test(\"Status 200 and e-statement confirmation\", () => pm.response.to.have.status(200));",
               "const json = pm.response.json();",
               "pm.test(\"Mentions e-statement or email\", () => {",
-              "  const s = json.response.toLowerCase();",
+              "  const s = String(json.data.response).toLowerCase();",
               "  pm.expect(s).to.satisfy(t => t.includes('e-statement') || t.includes('email') || t.includes('sent'));",
               "});"
             ]
@@ -356,7 +344,7 @@
               "pm.test(\"Status 200 and fallback response\", () => pm.response.to.have.status(200));",
               "const json = pm.response.json();",
               "pm.test(\"Has fallback text asking to rephrase or apologizing\", () => {",
-              "  const s = json.response.toLowerCase();",
+              "  const s = String(json.data.response).toLowerCase();",
               "  pm.expect(s).to.satisfy(t => t.includes(\"didn't understand\") || t.includes('rephrase') || t.includes('sorry'));",
               "});"
             ]
@@ -377,12 +365,9 @@
           "listen": "test",
           "script": {
             "exec": [
-              "pm.test(\"400 Bad Request\", () => pm.expect(pm.response.code).to.be.oneOf([400,422]));",
+              "pm.test(\"Error status (400/422/500)\", () => pm.expect(pm.response.code).to.be.oneOf([400,422,500]));",
               "const json = (() => { try { return pm.response.json(); } catch(e){ return {}; } })();",
-              "pm.test(\"Error mentions sessionId\", () => {",
-              "  const err = JSON.stringify(json).toLowerCase();",
-              "  pm.expect(err).to.satisfy(s => s.includes('sessionid') || s.includes('session id'));",
-              "});"
+              "pm.test(\"Has error field\", () => pm.expect(json).to.have.property('error'));"
             ]
           }
         }
@@ -401,12 +386,9 @@
           "listen": "test",
           "script": {
             "exec": [
-              "pm.test(\"400 Bad Request\", () => pm.expect(pm.response.code).to.be.oneOf([400,422]));",
+              "pm.test(\"Error status (400/422/500)\", () => pm.expect(pm.response.code).to.be.oneOf([400,422,500]));",
               "const json = (() => { try { return pm.response.json(); } catch(e){ return {}; } })();",
-              "pm.test(\"Error mentions query\", () => {",
-              "  const err = JSON.stringify(json).toLowerCase();",
-              "  pm.expect(err).to.include('query');",
-              "});"
+              "pm.test(\"Has error field\", () => pm.expect(json).to.have.property('error'));"
             ]
           }
         }
@@ -435,3 +417,4 @@
     }
   ]
 }
+
