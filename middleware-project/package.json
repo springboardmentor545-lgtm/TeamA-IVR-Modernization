@@ -1,24 +1,36 @@
 {
   "name": "middleware-project",
   "version": "1.0.0",
-  "description": "",
+  "description": "IVR and ACS middleware with structured logging and validation",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "test:logging": "node test-logging.js",
+    "logs:view": "tail -f logs/application-$(date +%Y-%m-%d).log",
+    "logs:view:error": "tail -f logs/error-$(date +%Y-%m-%d).log",
+    "logs:clear": "rm -rf logs/*.log && echo 'Logs cleared'"
   },
-  "keywords": [],
+  "keywords": [
+    "ivr",
+    "acs",
+    "middleware",
+    "logging",
+    "validation"
+  ],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
-<<<<<<< HEAD
-=======
     "axios": "^1.12.2",
->>>>>>> 32b3f2bde6f45b607feb5d1e28aa07052bfe0387
     "body-parser": "^2.2.0",
-    "express": "^5.1.0"
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "joi": "^18.0.1",
+    "uuid": "^13.0.0",
+    "winston": "^3.18.3",
+    "winston-daily-rotate-file": "^5.0.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.10"

@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Conversational IVR System</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body {
+font-family: 'Inter', sans-serif;
+}
+.glow-shadow {
+box-shadow: 0 0 15px rgba(168, 85, 247, 0.3), 0 0 5px rgba(168, 85, 247, 0.2);
+}
+.speaking-btn {
+animation: pulse-dark 1.5s infinite;
+}
+@keyframes pulse-dark {
+0% { background-color: rgba(168, 85, 247, 0.1); }
+50% { background-color: rgba(168, 85, 247, 0.3); }
+100% { background-color: rgba(168, 85, 247, 0.1); }
+}
+</style>
+</head>
+
+<body class="bg-black text-slate-200 min-h-screen p-4">
+<div class="container mx-auto max-w-7xl w-full">
+<header class="text-center mb-10">
+<h1 class="text-4xl sm:text-5xl font-bold font-family-oxanium text-white">Conversational IVR System</h1>
+<p class="mt-2 text-lg text-purple-300/80">Interact with our banking assistant using your voice or by typing.</p>
+</header>
+
+<main>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <!-- Main Content Column -->
+  <div class="lg:col-span-2">
+<section>
+<div class="bg-slate-900/50 backdrop-blur-md rounded-2xl border border-purple-500/30 p-6 glow-shadow">
+<label for="nlp-session" class="block text-sm font-medium font-family-oxanium text-slate-400">Session ID (auto-generated)</label>
+<input id="nlp-session" placeholder="e.g., sess-1234" class="mt-1 block w-full px-3 py-2 bg-black/30 border border-slate-700 rounded-md text-sm text-white shadow-sm placeholder-slate-500 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition" readonly />
+
+<label class="block text-sm font-medium font-family-oxanium text-slate-400 mt-4">Your Query</label>
+<input id="nlp-query" placeholder="e.g., What's my balance?" class="mt-1 block w-full px-3 py-2 bg-black/30 border border-slate-700 rounded-md text-sm text-white shadow-sm placeholder-slate-500 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition" />
+
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
+<button id="btn-nlp" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg transition-colors shadow-lg shadow-purple-500/20">Send</button>
+<button id="btn-stt" class="bg-purple-500/20 border border-purple-500/50 hover:bg-purple-500/30 text-white font-bold py-2 px-4 rounded-lg transition-colors">Speak 🎤</button>
+<button id="btn-tts" class="bg-purple-500/20 border border-purple-500/50 hover:bg-purple-500/30 text-white font-bold py-2 px-4 rounded-lg transition-colors">Read 🔊</button>
+</div>
+
+<div id="nlp-result-container" class="mt-6 hidden">
+<label class="block text-sm font-medium text-slate-400 mb-2">Response</label>
+<div id="nlp-result" class="p-4 rounded-lg bg-black/40 border border-slate-700 text-slate-100 min-h-[50px] whitespace-pre-wrap flex items-center justify-center">
+<div id="loader" class="hidden animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-purple-400"></div>
+</div>
+</div>
+
+<label class="block text-sm font-medium text-slate-400 mt-6">Quick Actions</label>
+<div class="grid grid-cols-2 sm:grid-cols-3 gap-4 mt-2">
+<button class="keypad-btn p-3 bg-slate-900/80 hover:bg-slate-800/80 border border-slate-700 hover:border-purple-500 hover:text-purple-300 rounded-lg text-slate-300 transition-colors" data-intent="ACS_BALANCE">Check Balance</button>
+<button class="keypad-btn p-3 bg-slate-900/80 hover:bg-slate-800/80 border border-slate-700 hover:border-purple-500 hover:text-purple-300 rounded-lg text-slate-300 transition-colors" data-intent="ACS_RECHARGE"> Recharge ₹100</button>
+<button class="keypad-btn p-3 bg-slate-900/80 hover:bg-slate-800/80 border border-slate-700 hover:border-purple-500 hover:text-purple-300 rounded-lg text-slate-300 transition-colors" data-intent="ACS_REPORT_LOST_CARD">Report Lost Card</button>
+<button class="keypad-btn p-3 bg-slate-900/80 hover:bg-slate-800/80 border border-slate-700 hover:border-purple-500 hover:text-purple-300 rounded-lg text-slate-300 transition-colors" data-intent="ACS_ACTIVATE_CARD">Activate Card</button>
+<button class="keypad-btn p-3 bg-slate-900/80 hover:bg-slate-800/80 border border-slate-700 hover:border-purple-500 hover:text-purple-300 rounded-lg text-slate-300 transition-colors" data-intent="ACS_UPDATE_CONTACT">Update Contact</button>
+<button class="keypad-btn p-3 bg-slate-900/80 hover:bg-slate-800/80 border border-slate-700 hover:border-purple-500 hover:text-purple-300 rounded-lg text-slate-300 transition-colors" data-intent="ACS_REPORT_SUSPICIOUS">Report Fraud</button>
+<button class="keypad-btn p-3 bg-slate-900/80 hover:bg-slate-800/80 border border-slate-700 hover:border-purple-500 hover:text-purple-300 rounded-lg text-slate-300 transition-colors" data-intent="ACS_MINI_STATEMENT">Mini Statement</button>
+<button class="keypad-btn p-3 bg-slate-900/80 hover:bg-slate-800/80 border border-slate-700 hover:border-purple-500 hover:text-purple-300 rounded-lg text-slate-300 transition-colors" data-intent="ACS_PAY_BILL">Pay Utility Bill</button>
+<button class="keypad-btn p-3 bg-slate-900/80 hover:bg-slate-800/80 border border-slate-700 hover:border-purple-500 hover:text-purple-300 rounded-lg text-slate-300 transition-colors" data-intent="ACS_LOAN_DETAILS">Loan Details</button>
+<button class="keypad-btn p-3 bg-slate-900/80 hover:bg-slate-800/80 border border-slate-700 hover:border-purple-500 hover:text-purple-300 rounded-lg text-slate-300 transition-colors" data-intent="ACS_ESTATEMENT">Request E-Statement</button>
+<button class="keypad-btn p-3 bg-slate-900/80 hover:bg-slate-800/80 border border-slate-700 hover:border-purple-500 hover:text-purple-300 rounded-lg text-slate-300 transition-colors" data-intent="AGENT_CONNECT">Connect to Agent</button>
+</div>
+</div>
+</section>
+  </div>
+  
+  <!-- History Column -->
+  <div class="lg:col-span-1">
+    <div class="bg-slate-900/50 backdrop-blur-md rounded-2xl border border-purple-500/30 p-6 glow-shadow h-fit">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-medium text-slate-400">History</h3>
+        <button id="clear-history-btn" class="text-sm text-purple-400 hover:text-purple-300 transition-colors flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
+            <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
+          </svg>
+          Clear
+        </button>
+      </div>
+      <div id="chat-history" class="max-h-96 overflow-y-auto p-3 bg-black/20 rounded-lg border border-slate-700 space-y-3">
+        <!-- History items will be injected here -->
+      </div>
+    </div>
+  </div>
+</div>
+</main>
+
+<footer class="text-center mt-10 pt-6 border-t border-slate-700">
+<p class="text-sm text-slate-500">A demonstration of modernizing legacy IVR systems.</p>
+</footer>
+</div>
+
+<script>
+// Chat History Management
+let chatHistory = JSON.parse(localStorage.getItem('chatHistory') || '[]');
+
+function renderChatHistory() {
+  const chatHistoryEl = document.getElementById('chat-history');
+  if (!chatHistoryEl) {
+    console.error('Chat history element not found');
+    return;
+  }
+  
+  chatHistoryEl.innerHTML = '';
+  if (chatHistory.length === 0) {
+    chatHistoryEl.innerHTML = '<div class="text-sm text-slate-500 text-center py-8">No history yet.</div>';
+    return;
+  }
+  chatHistory.forEach(item => {
+    const div = document.createElement('div');
+    div.className = "bg-slate-800/60 rounded-lg p-3 border border-slate-700/50";
+    div.innerHTML = `<div class="text-purple-300 text-sm font-medium mb-2">You: ${item.query}</div>
+      <div class="text-slate-200 text-sm">Bot: ${item.response}</div>`;
+    chatHistoryEl.appendChild(div);
+  });
+}
+
+function addToChatHistory(query, response) {
+  chatHistory.push({ query, response });
+  if (chatHistory.length > 20) chatHistory.shift(); // keep last 20
+  localStorage.setItem('chatHistory', JSON.stringify(chatHistory));
+  renderChatHistory();
+}
+
+// Make addToChatHistory globally accessible
+window.addToChatHistory = addToChatHistory;
+
+// Initialize chat history when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+  const clearHistoryBtn = document.getElementById('clear-history-btn');
+  if (clearHistoryBtn) {
+    clearHistoryBtn.addEventListener('click', () => {
+      chatHistory = [];
+      localStorage.removeItem('chatHistory');
+      renderChatHistory();
+    });
+  }
+  
+  // Clear any existing duplicate history entries
+  chatHistory = [];
+  localStorage.removeItem('chatHistory');
+  
+  // Initial render
+  renderChatHistory();
+});
+</script>
+<script src="./app.js"></script>
+</body>
+</html>

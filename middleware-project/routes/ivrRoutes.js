@@ -1,63 +1,11 @@
-<<<<<<< HEAD
-const express = require('express');
-const router = express.Router();
-const ivrController = require('../controllers/ivrController');
-
-router.post('/', async (req, res) => {
-  const { sessionId, inputType, inputValue } = req.body;
-
-  if (!sessionId || !inputType || !inputValue) {
-    return res.status(400).json({ error: 'Missing required fields' });
-  }
-
-  if (!['1', '2'].includes(String(inputValue))) {
-    return res.status(400).json({ error: 'inputValue must be "1" or "2"' });
-  }
-
-  try {
-    const result = await ivrController.handleInput({
-      sessionId,
-      inputType,
-      inputValue: String(inputValue)
-    });
-    res.json(result);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
-
-module.exports = router;
-=======
 const express = require("express");
 const router = express.Router();
 const ivrController = require("../controllers/ivrController");
+const { validate, schemas } = require("../middlewares/validateFields");
 
-router.post("/", async (req, res) => {
-  const { sessionId, inputType, inputValue } = req.body;
-  if (!sessionId || !inputType || !inputValue) {
-    return res.status(400).json({ error: "Missing required fields" });
-  }
-  if (!["1", "2"].includes(String(inputValue))) {
-    return res
-      .status(400)
-      .json({ error: 'inputValue must be "1" or "2" for this endpoint' });
-  }
-  try {
-    const result = await ivrController.handleInput({
-      sessionId,
-      inputType,
-      inputValue: String(inputValue),
-    });
-    res.json(result);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Internal server error" });
-  }
-});
-
+// Use "/input" instead of "/"
+router.post("/input", validate(schemas.ivrInput), ivrController.handleInput);
 router.post("/conversation", ivrController.conversation);
+router.post("/conversation-i18n", ivrController.conversationI18n);
 
 module.exports = router;
-
->>>>>>> 32b3f2bde6f45b607feb5d1e28aa07052bfe0387
