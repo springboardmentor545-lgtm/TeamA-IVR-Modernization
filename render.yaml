@@ -1,0 +1,30 @@
+# Render Blueprint. Lives at the repository root; the app itself is in the
+# middleware-project subdirectory, which rootDir points at.
+#
+# Render injects PORT at runtime and the app reads it via config.PORT, so the
+# port is deliberately not set here.
+services:
+  - type: web
+    name: teama-ivr-middleware
+    runtime: node
+    plan: free
+    rootDir: middleware-project
+
+    # npm ci installs exactly what package-lock.json pins, including dotenv,
+    # which is not present in the committed node_modules.
+    buildCommand: npm ci
+    startCommand: npm start
+
+    # Returns 200 with a JSON body; cheap enough to poll.
+    healthCheckPath: /test
+
+    envVars:
+      # Matches the version CI runs and the version the suite was verified on.
+      - key: NODE_VERSION
+        value: "22.16.0"
+
+      # Disables the development CORS exemption for localhost origins. The
+      # bundled UI is same-origin, so it is unaffected. Add CORS_ORIGINS in the
+      # Render dashboard if another origin needs to call the API.
+      - key: NODE_ENV
+        value: production
