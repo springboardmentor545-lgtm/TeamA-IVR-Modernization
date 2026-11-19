@@ -110,6 +110,54 @@ describe('translate', () => {
   test('passes text through when source and target match', () => {
     assert.equal(translate('what is my balance', 'en', 'en'), 'what is my balance');
   });
+
+  // The pivot phrase has to be something detectIntent actually matches.
+  // "Please block my card" and "update my contact information" did not, so
+  // those two Hinglish phrasings reached the UNKNOWN fallback.
+  test('pivot phrases round-trip through detectIntent', async () => {
+    const cases = [
+      ['mera card block karo', 'hi-latn', 'ACS_REPORT_LOST_CARD'],
+      ['mera mobile number update karo', 'hi-latn', 'ACS_UPDATE_CONTACT']
+    ];
+    for (const [query, lang, want] of cases) {
+      assert.equal(await detectIntent(translate(query, lang, 'en')), want, `failed for: ${query}`);
+    }
+  });
+});
+
+// Devanagari Hindi was detected correctly but then passed through a
+// placeholder translation, so every Hindi query hit the UNKNOWN fallback.
+describe('Devanagari Hindi end to end', () => {
+  const cases = [
+    ['मेरा बैलेंस क्या है', 'ACS_BALANCE'],
+    ['मेरे खाते में कितने पैसे हैं', 'ACS_BALANCE'],
+    ['मेरा कार्ड खो गया', 'ACS_REPORT_LOST_CARD'],
+    ['मेरा कार्ड गुम हो गया है', 'ACS_REPORT_LOST_CARD'],
+    ['कृपया मेरा कार्ड ब्लॉक करें', 'ACS_REPORT_LOST_CARD'],
+    ['मेरा नया कार्ड एक्टिवेट करें', 'ACS_ACTIVATE_CARD'],
+    ['मेरा अकाउंट रिचार्ज करें', 'ACS_RECHARGE'],
+    ['मेरा मोबाइल नंबर अपडेट करें', 'ACS_UPDATE_CONTACT'],
+    ['मेरा संपर्क विवरण बदलें', 'ACS_UPDATE_CONTACT'],
+    ['मुझे मिनी स्टेटमेंट चाहिए', 'BAP_GET_MINI_STATEMENT'],
+    ['मेरा बिजली बिल भुगतान करें', 'BAP_PAY_UTILITY_BILL'],
+    ['मेरे लोन की जानकारी दें', 'BAP_GET_LOAN_DETAILS'],
+    ['मुझे ई-स्टेटमेंट भेजें', 'BAP_REQUEST_ESTATEMENT'],
+    ['मुझे एजेंट से बात करनी है', 'BAP_AGENT']
+  ];
+
+  test('detects Devanagari and routes each query to its intent', async () => {
+    for (const [query, want] of cases) {
+      assert.equal(detectLanguage(query), 'hi', `wrong language for: ${query}`);
+      const intent = await detectIntent(translate(query, 'hi', 'en'));
+      assert.equal(intent, want, `failed for: ${query}`);
+    }
+  });
+
+  // Unrecognised Hindi must reach the polite fallback rather than be guessed
+  // into an action the caller never asked for.
+  test('unrecognised Hindi falls through to UNKNOWN', async () => {
+    assert.equal(await detectIntent(translate('गाना बजाओ', 'hi', 'en')), 'UNKNOWN');
+  });
 });
 
 describe('config', () => {

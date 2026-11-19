@@ -43,6 +43,13 @@ animation: pulse-dark 1.5s infinite;
 <label for="nlp-session" class="block text-sm font-medium font-family-oxanium text-slate-400">Session ID (auto-generated)</label>
 <input id="nlp-session" placeholder="e.g., sess-1234" class="mt-1 block w-full px-3 py-2 bg-black/30 border border-slate-700 rounded-md text-sm text-white shadow-sm placeholder-slate-500 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition" readonly />
 
+<label for="nlp-lang" class="block text-sm font-medium font-family-oxanium text-slate-400 mt-4">Speech Language</label>
+<select id="nlp-lang" class="mt-1 block w-full px-3 py-2 bg-black/30 border border-slate-700 rounded-md text-sm text-white shadow-sm focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition">
+<option value="en-US" selected>English</option>
+<option value="hi-IN">हिंदी / Hindi</option>
+</select>
+<p class="mt-1 text-xs text-slate-500">Sets the language for Speak 🎤. Typed queries are detected automatically, including Hinglish such as "mera balance kitne hai". Replies are in English.</p>
+
 <label class="block text-sm font-medium font-family-oxanium text-slate-400 mt-4">Your Query</label>
 <input id="nlp-query" placeholder="e.g., What's my balance?" class="mt-1 block w-full px-3 py-2 bg-black/30 border border-slate-700 rounded-md text-sm text-white shadow-sm placeholder-slate-500 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition" />
 

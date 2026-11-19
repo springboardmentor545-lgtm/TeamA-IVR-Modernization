@@ -68,13 +68,13 @@ function translate(text = "", from = "en", to = "en") {
       return "I lost my card";
     }
     if (q.includes("update") && q.includes("contact")) {
-      return "I want to update my contact information";
+      return "I want to update contact details";
     }
     if (q.includes("block") && q.includes("card")) {
-      return "Please block my card";
+      return "Please report lost card";
     }
     if (q.includes("mobile") && (q.includes("number") || q.includes("no"))) {
-      return "I want to update my mobile number";
+      return "I want to update contact details";
     }
     if (q.includes("recharge") || (q.includes("add") && q.includes("money"))) {
       return "Recharge my account with 100 rupees";
@@ -84,6 +84,57 @@ function translate(text = "", from = "en", to = "en") {
     }
     // Fallback
     return "I want to talk to an agent";
+  }
+
+  // Heuristic mapping from Devanagari Hindi to English intents. Same keyword
+  // approach as the Hinglish branch above: the detected script tells us the
+  // language, and these map the words that actually carry the intent onto the
+  // English phrases detectIntent matches.
+  //
+  // Ordered most specific first — "कार्ड" appears in both the lost-card and
+  // activate-card phrasings, so those are tested before anything broader.
+  if (src === "hi" && dst === "en") {
+    const q = String(text);
+    const has = (...words) => words.some((w) => q.includes(w));
+
+    // खो/गुम = lost, ब्लॉक/बंद = block
+    if (has("खो", "गुम") && has("कार्ड")) return "I lost my card";
+    if (has("ब्लॉक") && has("कार्ड")) return "Please report lost card";
+
+    // एक्टिवेट/सक्रिय/चालू = activate
+    if (has("एक्टिवेट", "सक्रिय", "चालू") && has("कार्ड")) return "Activate my card";
+
+    if (has("रिचार्ज")) return "Recharge my account with 100 rupees";
+
+    // संपर्क = contact, मोबाइल/नंबर = mobile/number, अपडेट/बदल = update/change
+    if (has("संपर्क", "मोबाइल", "नंबर") && has("अपडेट", "बदल")) {
+      return "I want to update contact details";
+    }
+
+    // Checked before the mini statement rule, which would otherwise swallow it.
+    if (has("ई-स्टेटमेंट", "ईस्टेटमेंट", "ईमेल")) return "Send me my e-statement";
+
+    // स्टेटमेंट/विवरण = statement, लेनदेन = transaction
+    if (has("स्टेटमेंट", "विवरण", "लेनदेन")) return "Give me a mini statement";
+
+    // बिल = bill, भुगतान = payment, बिजली = electricity
+    if (has("बिल", "भुगतान", "बिजली")) return "Pay my electricity bill";
+
+    // लोन/ऋण/कर्ज = loan
+    if (has("लोन", "ऋण", "कर्ज")) return "Tell me about my loan";
+
+    // एजेंट/प्रतिनिधि = agent/representative, बात = talk
+    if (has("एजेंट", "प्रतिनिधि", "बात")) return "I want to talk to an agent";
+
+    // बैलेंस/शेष/बकाया = balance, पैसे/राशि = money/amount, खाता = account
+    if (has("बैलेंस", "शेष", "बकाया", "पैसे", "राशि", "खाता")) {
+      return "Please check my balance";
+    }
+
+    // Deliberately returns the text unchanged rather than guessing. It then
+    // reaches the polite fallback, which is safer than routing an
+    // unrecognised banking request to an action the user did not ask for.
+    return text;
   }
 
   // Placeholder translation: annotate for non-EN to non-EN for demo

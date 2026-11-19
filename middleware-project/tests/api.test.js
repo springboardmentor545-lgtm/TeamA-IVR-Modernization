@@ -136,6 +136,33 @@ describe('POST /ivr/conversation-i18n', () => {
     assert.equal(english.data.lang, 'en');
   });
 
+  // Devanagari was detected but then passed through a placeholder
+  // translation, so every Hindi query reached the UNKNOWN fallback.
+  test('answers Devanagari Hindi queries', async () => {
+    const cases = [
+      ['मेरा बैलेंस क्या है', /balance/i],
+      ['मेरा कार्ड खो गया', /blocked immediately/i],
+      ['मेरे लोन की जानकारी दें', /loan|EMI/i],
+      ['मुझे एजेंट से बात करनी है', /connected to a customer service agent/i]
+    ];
+    for (const [query, expected] of cases) {
+      const body = await (await post('/ivr/conversation-i18n', { sessionId: 's1', query })).json();
+      assert.equal(body.data.lang, 'hi', `wrong language for: ${query}`);
+      assert.match(body.data.response, expected, `failed for: ${query}`);
+    }
+  });
+
+  // This endpoint now serves every query from the UI, so English has to keep
+  // working through it, not just non-English input.
+  test('English passes through unchanged', async () => {
+    const body = await (await post('/ivr/conversation-i18n', {
+      sessionId: 's1',
+      query: 'connect me to an agent'
+    })).json();
+    assert.equal(body.data.lang, 'en');
+    assert.match(body.data.response, /connected to a customer service agent/i);
+  });
+
   test('missing fields return 400', async () => {
     assert.equal((await post('/ivr/conversation-i18n', {})).status, 400);
     assert.equal((await post('/ivr/conversation-i18n', undefined)).status, 400);

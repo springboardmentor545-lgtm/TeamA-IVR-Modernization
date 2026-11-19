@@ -1,7 +1,14 @@
 // --- Backend API layer ---
 // All IVR logic lives in the middleware. The UI only transports the query
 // and renders the response. Served same-origin, so a relative URL is correct.
-const CONVERSATION_ENDPOINT = '/ivr/conversation';
+// The i18n endpoint runs language detection and translation ahead of intent
+// routing. English passes through it unchanged, so it is the right default for
+// every query rather than a special case for non-English input.
+const CONVERSATION_ENDPOINT = '/ivr/conversation-i18n';
+
+// Language of the most recent reply, used to pick the speech-synthesis voice.
+// The middleware answers in English today and reports that as responseLang.
+let lastResponseLang = 'en';
 
 // Quick-action buttons carry intent codes (data-intent). The middleware's
 // intent detection works on natural language, so map each code to a phrase
@@ -62,13 +69,22 @@ async function handleQuery(sessionId, queryOrIntent) {
     };
   }
 
+  // Remember what language the reply came back in so Read 🔊 uses a matching
+  // voice. Falls back to English, which is what the service returns today.
+  lastResponseLang = body?.data?.responseLang || 'en';
+
   return {
     success: body?.success !== false,
     sessionId: body?.data?.sessionId || sessionId,
     data: { message: body?.data?.response || 'No response from server.' },
+    detectedLang: body?.data?.lang,
+    responseLang: lastResponseLang,
     requestId: body?.requestId
   };
 }
+
+// Maps the service's language codes onto BCP-47 tags the speech APIs accept.
+const SPEECH_LANG = { en: 'en-US', hi: 'hi-IN', 'hi-latn': 'hi-IN' };
 
 
     // --- Frontend Logic ---
@@ -76,6 +92,7 @@ async function handleQuery(sessionId, queryOrIntent) {
       // --- Element Selectors ---
       const nlpSessionInput = document.getElementById('nlp-session');
       const nlpQueryInput = document.getElementById('nlp-query');
+      const nlpLangSelect = document.getElementById('nlp-lang');
       const nlpResultContainer = document.getElementById('nlp-result-container');
       const nlpResultEl = document.getElementById('nlp-result');
 
@@ -176,7 +193,6 @@ async function handleQuery(sessionId, queryOrIntent) {
 
         if (!recognition) {
           recognition = new SpeechRecognition();
-          recognition.lang = 'en-US';
           recognition.continuous = false;
           recognition.interimResults = true;
           recognition.maxAlternatives = 1;
@@ -221,6 +237,9 @@ async function handleQuery(sessionId, queryOrIntent) {
           };
         }
 
+        // Set on every start, not just at creation: the recogniser is reused
+        // across presses, so a language change between them must take effect.
+        recognition.lang = nlpLangSelect ? nlpLangSelect.value : 'en-US';
         recognition.start();
       });
 
@@ -228,7 +247,9 @@ async function handleQuery(sessionId, queryOrIntent) {
 const speakText = (text) => {
   if (!text) return;
   const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = 'en-US';
+  // Match the voice to the language the reply actually came back in, rather
+  // than assuming English.
+  utterance.lang = SPEECH_LANG[lastResponseLang] || 'en-US';
   utterance.pitch = 1;
   utterance.rate = 1;
   utterance.volume = 1;
