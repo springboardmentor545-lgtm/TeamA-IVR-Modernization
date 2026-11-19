@@ -23,8 +23,6 @@ This project upgrades a traditional IVR middleware by adding **conversational AI
 
 ## Architecture
 
-![System Architecture Diagram](middleware-project/docs/architecture.png)
-
 - **User** sends a query to the **Middleware**.
 - **Intent Detection** module analyzes the query.
 - Requests are routed to:
@@ -52,15 +50,17 @@ middleware-project/
 │   ├── bapService.js       # BAP mock service
 ├── handlers/
 │   └── intentHandler.js  # Intent detection
-├──  public 
-|    ├──index.html         # Clean and Modern UI
-|    ├──app.js             # All Functionalities and Hooks
-|    ├──style.css
+├── public/
+│   ├── index.html          # Clean and Modern UI
+│   ├── app.js              # All Functionalities and Hooks
+│   └── styles.css
 ├── docs/
-│   ├── API.md              # API documentation
-│   └── architecture.png    # Architecture diagram
-└── tests/
-        └── postman_collection.json # Test cases
+│   └── API.md              # API documentation
+├── tests/
+│   ├── unit.test.js        # Intent, language and config tests
+│   └── api.test.js         # HTTP integration tests
+├── .env.example            # Every setting, with defaults
+└── *.postman_collection.json # Manual exploration collections
 ```
 
 ---
