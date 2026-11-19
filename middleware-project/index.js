@@ -51,7 +51,17 @@ console.log(
 app.use(express.json());
 
 // ✅ Serve static frontend (index.html, app.js, etc.)
-app.use(express.static(path.join(__dirname, 'public')));
+//
+// "no-cache" does not mean "never cache" — it means revalidate before reusing.
+// The browser still stores the file and still sends If-None-Match, so an
+// unchanged asset costs a 304 rather than a re-download. express.static's
+// default of max-age=0 lets browsers reuse a stale copy without asking, which
+// left visitors running an old app.js against a newer API after a deploy.
+app.use(express.static(path.join(__dirname, 'public'), {
+  etag: true,
+  lastModified: true,
+  setHeaders: (res) => res.setHeader('Cache-Control', 'no-cache')
+}));
 console.log('4. Static frontend served from /public');
 
 // ✅ Request logger middleware

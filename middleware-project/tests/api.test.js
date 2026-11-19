@@ -4,6 +4,7 @@
 const { test, describe, before, after } = require('node:test');
 const assert = require('node:assert');
 const { spawn } = require('node:child_process');
+const http = require('node:http');
 const path = require('node:path');
 
 const PORT = 3987;
@@ -62,6 +63,43 @@ describe('health and static UI', () => {
     const res = await fetch(`${BASE}/`);
     assert.equal(res.status, 200);
     assert.match(await res.text(), /Conversational IVR/i);
+  });
+
+  // express.static defaults to max-age=0, which lets a browser reuse a stale
+  // copy without revalidating — visitors kept running an old app.js against a
+  // newer API after a deploy. no-cache forces revalidation; an unchanged file
+  // still costs only a 304.
+  test('static assets are revalidated rather than served stale', async () => {
+    for (const asset of ['/', '/app.js', '/index.html']) {
+      const res = await fetch(`${BASE}${asset}`);
+      assert.equal(res.status, 200, `expected 200 for ${asset}`);
+      assert.equal(res.headers.get('cache-control'), 'no-cache', `wrong cache-control for ${asset}`);
+      assert.ok(res.headers.get('etag'), `expected an ETag for ${asset}`);
+    }
+  });
+
+  // Uses node:http rather than fetch: per the Fetch spec, a request carrying
+  // If-None-Match switches the cache mode to "no-store", and undici does not
+  // forward the header, so fetch always sees 200 here even when the server
+  // would answer 304.
+  test('an unchanged asset revalidates to 304', async () => {
+    const first = await fetch(`${BASE}/app.js`);
+    const etag = first.headers.get('etag');
+    assert.ok(etag, 'expected an ETag to revalidate against');
+
+    const status = await new Promise((resolve, reject) => {
+      const req = http.request(
+        { host: 'localhost', port: PORT, path: '/app.js', headers: { 'If-None-Match': etag } },
+        (res) => {
+          res.resume();
+          resolve(res.statusCode);
+        }
+      );
+      req.on('error', reject);
+      req.end();
+    });
+
+    assert.equal(status, 304);
   });
 });
 
