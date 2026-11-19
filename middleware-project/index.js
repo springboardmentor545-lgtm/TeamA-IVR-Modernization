@@ -25,9 +25,29 @@ try {
 
 // Initialize Express
 const app = express();
-const PORT = 3000;
+const PORT = config.PORT;
 
-app.use(cors());
+// Restrict cross-origin access to an allowlist. Requests with no Origin header
+// (same-origin browser requests, curl, Postman) are unaffected by CORS and pass
+// through untouched. A disallowed origin gets no CORS headers rather than an
+// error, which is what the browser needs to block the response.
+const allowLocalhostOrigins = config.NODE_ENV !== 'production';
+const LOCALHOST_ORIGIN = /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/;
+
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true);
+    if (config.CORS_ORIGINS.includes(origin)) return callback(null, true);
+    if (allowLocalhostOrigins && LOCALHOST_ORIGIN.test(origin)) return callback(null, true);
+    return callback(null, false);
+  }
+}));
+console.log(
+  config.CORS_ORIGINS.length
+    ? `3b. CORS allowlist: ${config.CORS_ORIGINS.join(', ')}`
+    : '3b. CORS: same-origin only' + (allowLocalhostOrigins ? ' (plus localhost in development)' : '')
+);
+
 app.use(express.json());
 
 // ✅ Serve static frontend (index.html, app.js, etc.)
@@ -69,11 +89,8 @@ try {
   console.log('❌ BAP routes failed:', err.message);
 }
 
-// ✅ Error handler (keep at the end)
-app.use((err, req, res, next) => {
-  console.error('Server error:', err);
-  res.status(500).json({ error: 'Internal server error' });
-});
+// ✅ Error handler (keep at the end) — preserves err.status/err.type and requestId
+app.use(require('./middlewares/errorHandler'));
 
 // ✅ Start the server (single instance only)
 app.listen(PORT, () => {
@@ -86,7 +103,7 @@ setTimeout(() => {
   console.log('\nAvailable routes:');
   console.log('GET   /');
   console.log('GET   /test');
-  console.log('POST  /ivr/');
+  console.log('POST  /ivr/input');
   console.log('POST  /ivr/conversation');
   console.log('POST  /ivr/conversation-i18n');
   console.log('POST  /acs/start');
@@ -94,4 +111,4 @@ setTimeout(() => {
   console.log('POST  /acs/sendDTMF');
   console.log('POST  /bap/process');
 }, 500);
-console.log('10. Server initialization complete.');T
+console.log('10. Server initialization complete.');

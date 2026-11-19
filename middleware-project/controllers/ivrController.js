@@ -73,7 +73,9 @@ module.exports = {
   async conversation(req, res, next) {
     const { log } = req;
     try {
-      const { sessionId, query } = req.body;
+      // `|| {}` because a POST with no body at all leaves req.body undefined,
+      // and destructuring that throws a TypeError the catch turns into a 500.
+      const { sessionId, query } = req.body || {};
 
       // Manual validation for now (can be moved to Joi schema later)
       if (!sessionId || !query) {
@@ -130,7 +132,7 @@ module.exports = {
   async conversationI18n(req, res, next) {
     const { log } = req;
     try {
-      const { sessionId, query } = req.body;
+      const { sessionId, query } = req.body || {};
 
       // Manual validation for now (can be moved to Joi schema later)
       if (!sessionId || !query) {
@@ -151,12 +153,15 @@ module.exports = {
       const result = await handleIntent(sessionId, queryEn);
       const responseEn = result?.response || result?.error || "Sorry, I didn't understand that.";
       
-      return res.json({ 
+      return res.json({
         success: true,
-        data: { 
-          sessionId, 
-          lang: "en", 
-          response: responseEn 
+        data: {
+          sessionId,
+          // Detected language of the incoming query. The response itself is
+          // always English, hence the separate responseLang.
+          lang: srcLang,
+          responseLang: "en",
+          response: responseEn
         },
         requestId: req.requestId
       });
@@ -173,4 +178,4 @@ module.exports = {
       next(err);
     }
   },
-};
+};

@@ -126,7 +126,13 @@ async function handleQuery(sessionId, queryOrIntent) {
     return { success: r.success, sessionId, data: { message: r.message } };
   }
 
-  if (q.includes("lost card") || q.includes("report lost") || q.includes("block card")) {
+  // Must stay in sync with detectIntent() in handlers/intentHandler.js — if this
+  // is narrower, a query routed here as ACS_REPORT_LOST_CARD falls through to the
+  // "Unable to map" error instead of being handled.
+  if (/lost\s+(\w+\s+){0,3}card/.test(q) ||
+      q.includes("report lost") ||
+      q.includes("block card") ||
+      q.includes("block it")) {
     const r = await reportLostCard(sessionId);
     return { success: r.success, sessionId, data: { message: r.message } };
   }

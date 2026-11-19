@@ -14,7 +14,10 @@ async function detectIntent(query = "") {
   // ACS intents
   if (lowerCaseQuery.includes("balance")) return "ACS_BALANCE";
   if (lowerCaseQuery.includes("recharge")) return "ACS_RECHARGE";
-  if (/lost\s+(\w+\s+)?card/.test(lowerCaseQuery) ||
+  // Allows up to 3 words between "lost" and "card" so phrasings like
+  // "lost my debit card" / "lost my new credit card" are detected.
+  // Must stay in sync with handleQuery() in services/acsService.js.
+  if (/lost\s+(\w+\s+){0,3}card/.test(lowerCaseQuery) ||
     lowerCaseQuery.includes("report lost") ||
     lowerCaseQuery.includes("block card") ||
     lowerCaseQuery.includes("block it")) {
@@ -104,14 +107,9 @@ async function handleIntent(sessionId, query) {
       }
 
       case "BAP_AGENT": {
-        // If bapService has an agent-handoff function (e.g., handleAgentHandoff), call it.
-        if (typeof bapService.handleAgentHandoff === "function") {
-          const svc = await bapService.handleAgentHandoff(sessionId, query);
-          const message = svc?.responseText || svc?.message || "Connecting to agent. Please hold.";
-          return { success: true, sessionId, response: message, meta: { intent } };
-        }
-        // fallback message
-        return { success: true, sessionId, response: "Connecting you to an agent. Please hold.", meta: { intent } };
+        const svc = await bapService.agentConnect(sessionId);
+        const message = svc?.responseText || svc?.message || "Connecting you to an agent. Please hold.";
+        return { success: true, sessionId, response: message, meta: { intent } };
       }
 
       // ---- Unknown ----

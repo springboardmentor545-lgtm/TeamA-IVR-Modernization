@@ -6,10 +6,15 @@ function detectLanguage(text = "") {
   // Very naive script-based detection
   // Devanagari (Hindi/Marathi)
   if (/[\u0900-\u097F]/.test(text)) return "hi";
-  // Hinglish (Hindi in Latin script) heuristic: common Hindi words in Latin
+  // Hinglish (Hindi in Latin script) heuristic: common Hindi words in Latin.
+  // Only Hindi-specific markers belong here. English words like "balance",
+  // "account" or "loan" would classify ordinary English queries as Hinglish
+  // and send them through the Hinglish translation mappings. Matched on word
+  // boundaries so "hai" does not match inside "hair" or "shanghai".
   const t = String(text).toLowerCase();
-  const hinglishHints = ["paise", "kitne", "hai", "mera", "account", "balance", "statement", "bill", "loan", "estatement", "bhugtan", "mobile", "number", "lost card", "block", "agent", "baat"]; 
-  if (hinglishHints.some(w => t.includes(w))) return "hi-latn";
+  const hinglishHints = ["paise", "kitne", "kitna", "mera", "mere", "meri", "mujhe", "chahiye", "bhugtan", "baat", "karna", "karo", "kya", "hai"];
+  const hinglishPattern = new RegExp(`\\b(${hinglishHints.join("|")})\\b`);
+  if (hinglishPattern.test(t)) return "hi-latn";
   // Tamil
   if (/[\u0B80-\u0BFF]/.test(text)) return "ta";
   // Telugu

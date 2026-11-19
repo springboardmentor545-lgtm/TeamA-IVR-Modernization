@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# A newer push to the same branch makes an in-flight run obsolete.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+
+    # The app lives in a subdirectory; the workflow itself must stay at the
+    # repository root for GitHub to pick it up.
+    defaults:
+      run:
+        working-directory: middleware-project
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      # The test script passes a glob to `node --test`, which needs Node 21+,
+      # and the suite uses the built-in runner's describe/before hooks.
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          cache: npm
+          cache-dependency-path: middleware-project/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
+        env:
+          # Pinned so the CORS suite exercises the development rules it is
+          # written against. The integration suite starts the server itself on
+          # its own port.
+          NODE_ENV: development

@@ -4,8 +4,8 @@ const { logger } = require('../middlewares/logger');
 
 const getBalance = async (sessionId) => {
   try {
-    // Check if BAP API URL is configured and available
-    if (!config.bapApiUrl || config.bapApiUrl.includes('localhost:3001')) {
+    // Mock when explicitly forced, or when there is no BAP URL to call.
+    if (config.USE_BAP_MOCK || !config.bapApiUrl) {
       logger.info(`Using mock balance for session: ${sessionId}`);
       // Return mock response when BAP server is not available
       return {
@@ -91,6 +91,7 @@ const handle = async (payload) => {
 module.exports = {
   getBalance,
   getMiniStatement,
+  agentConnect,
   payUtilityBill,
   getLoanDetails,
   requestEStatement,

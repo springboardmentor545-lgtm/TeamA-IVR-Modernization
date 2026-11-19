@@ -56,31 +56,41 @@ const logger = winston.createLogger({
     winston.format.json()
   ),
   transports,
-  // Don't exit on handled exceptions
-  exitOnError: false
+  // Exit after logging an uncaught exception. Staying alive leaves the process
+  // in an unknown state while health checks keep passing, so the platform never
+  // restarts it — which is how a ReferenceError on startup went unnoticed for
+  // weeks. Log it, exit, and let the supervisor restart a clean process.
+  exitOnError: true
 });
 
-// Handle uncaught exceptions
-logger.exceptions.handle(
-  new DailyRotateFile({
-    filename: path.join(logsDir, 'exceptions-%DATE%.log'),
-    datePattern: 'YYYY-MM-DD',
-    zippedArchive: true,
-    maxSize: '20m',
-    maxFiles: '30d'
-  })
-);
+// Handle uncaught exceptions and unhandled rejections.
+//
+// winston's own exceptions.handle()/rejections.handle() wait for every
+// attached transport to signal that it has flushed before they will exit, and
+// winston-daily-rotate-file does not reliably emit that signal — so the
+// process stayed alive in an unknown state while health checks kept passing.
+// That is how a ReferenceError at startup went unnoticed. Handle both signals
+// explicitly instead: log through the normal transports, allow a brief flush
+// window, then exit non-zero so the supervisor restarts a clean process.
+const FLUSH_MS = 1000;
 
-// Handle unhandled rejections
-logger.rejections.handle(
-  new DailyRotateFile({
-    filename: path.join(logsDir, 'rejections-%DATE%.log'),
-    datePattern: 'YYYY-MM-DD',
-    zippedArchive: true,
-    maxSize: '20m',
-    maxFiles: '30d'
-  })
-);
+const fatal = (kind) => (err) => {
+  try {
+    logger.error(`${kind}: ${err && err.message ? err.message : err}`, {
+      kind,
+      stack: err && err.stack
+    });
+  } catch (loggingError) {
+    // Never let the handler itself be the reason we fail to report.
+    console.error(`${kind}:`, err);
+  }
+  // Not unref'd: the timer must keep the process alive long enough to reach
+  // the exit, so the code is always 1 rather than an incidental 0.
+  setTimeout(() => process.exit(1), FLUSH_MS);
+};
+
+process.on('uncaughtException', fatal('uncaughtException'));
+process.on('unhandledRejection', fatal('unhandledRejection'));
 
 // Test the logger
 logger.info('Logger initialized successfully');

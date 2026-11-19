@@ -1,347 +1,75 @@
- const delay = ms => new Promise(res => setTimeout(res, ms));
+// --- Backend API layer ---
+// All IVR logic lives in the middleware. The UI only transports the query
+// and renders the response. Served same-origin, so a relative URL is correct.
+const CONVERSATION_ENDPOINT = '/ivr/conversation';
 
-async function getBalance(sessionId) {
-      await delay(50);
-      return {
-        success: true,
-        sessionId,
-        message: `Your account balance is $1,234.56. (Mock Data)`
-      };
-    }
+// Quick-action buttons carry intent codes (data-intent). The middleware's
+// intent detection works on natural language, so map each code to a phrase
+// it recognises instead of sending the raw code.
+const INTENT_QUERIES = {
+  ACS_BALANCE: 'What is my balance?',
+  ACS_RECHARGE: 'I want to recharge',
+  ACS_REPORT_LOST_CARD: 'Report lost card',
+  ACS_ACTIVATE_CARD: 'Activate my new card',
+  ACS_UPDATE_CONTACT: 'Update contact details',
+  ACS_REPORT_SUSPICIOUS: 'Report a suspicious transaction',
+  ACS_MINI_STATEMENT: 'Show my mini statement',
+  ACS_PAY_BILL: 'Pay my utility bill',
+  ACS_LOAN_DETAILS: 'Loan details',
+  ACS_ESTATEMENT: 'Send my e-statement',
+  AGENT_CONNECT: 'Connect me to an agent'
+};
 
-    async function recharge(sessionId, amount = 100) {
-      await delay(50);
-      return {
-        success: true,
-        sessionId,
-        message: `Recharge successful for ₹${amount}.`
-      };
-    }
+/**
+ * Sends a query to the middleware and normalises the reply into the shape the
+ * UI renders: { success, sessionId, data: { message }, error: { message } }.
+ */
+async function handleQuery(sessionId, queryOrIntent) {
+  if (!queryOrIntent) {
+    return {
+      success: false,
+      sessionId,
+      error: { message: 'Query or intent is required.' }
+    };
+  }
 
-    async function reportLostCard(sessionId) {
-      await delay(70);
-      return {
-        success: true,
-        sessionId,
-        message: `Thank you. Your card has been blocked immediately. A customer service agent will call you shortly to confirm.`
-      };
+  // Resolve an intent code to its natural-language query; pass free text through.
+  const query = INTENT_QUERIES[queryOrIntent] || queryOrIntent.toString();
 
+  let res;
+  let body;
+  try {
+    res = await fetch(CONVERSATION_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sessionId, query })
+    });
+    body = await res.json();
+  } catch (err) {
+    return {
+      success: false,
+      sessionId,
+      error: { message: 'Could not reach the IVR service. Please try again.' }
+    };
+  }
 
+  if (!res.ok) {
+    return {
+      success: false,
+      sessionId,
+      error: { message: body?.message || body?.error || 'The IVR service returned an error.' },
+      requestId: body?.requestId
+    };
+  }
 
-    }
+  return {
+    success: body?.success !== false,
+    sessionId: body?.data?.sessionId || sessionId,
+    data: { message: body?.data?.response || 'No response from server.' },
+    requestId: body?.requestId
+  };
+}
 
-    async function activateNewCard(sessionId) {
-      await delay(70);
-      return {
-        success: true,
-        sessionId,
-        message: `To activate your new card, please enter the 16-digit card number followed by the hash key.`
-      };
-    }
-
-    async function updateContactDetails(sessionId) {
-      await delay(70);
-      return {
-        success: true,
-        sessionId,
-        message: `A secure link to update your contact details has been sent to your registered mobile number.`
-      };
-    }
-
-    async function reportSuspiciousTransaction(sessionId) {
-      await delay(70);
-      return {
-        success: true,
-        sessionId,
-        message: `Thank you for reporting this. A temporary hold has been placed on your account. Our fraud protection team will contact you within the next hour.`
-      };
-    }
-
-    async function getMiniStatement(sessionId) {
-      await delay(70);
-      return {
-        success: true,
-        sessionId,
-        message: "Your last five transactions are: a debit of $50, a credit of $200, a debit of $25, a debit of $10, and a credit of $500.",
-      };
-    }
-
-    async function payUtilityBill(sessionId) {
-      await delay(70);
-      return {
-        success: true,
-        sessionId,
-        message: "Please say or enter your 10-digit customer ID for your utility provider.",
-      };
-    }
-
-    async function getLoanDetails(sessionId) {
-      await delay(70);
-      return {
-        success: true,
-        sessionId,
-        message: "For your personal loan, your next EMI of $350 is due on the 15th of this month. Your outstanding balance is $8,500.",
-      };
-    }
-
-    async function requestEStatement(sessionId) {
-      await delay(70);
-      return {
-        success: true,
-        sessionId,
-        message: "Your e-statement for the last 3 months has been sent to your registered email address. Please check your inbox.",
-      };
-    }
-
-async function agentConnect(sessionId) {
-      await delay(70);
-      return {
-        success: true,
-        sessionId,
-        message: "You are now connected to a customer service agent.",
-      };
-    }
-
-    async function handleQuery(sessionId, queryOrIntent) {
-      if (!queryOrIntent) {
-        return {
-          success: false,
-          sessionId,
-          error: {
-            message: "Query or intent is required."
-          }
-        };
-      }
-
-      const q = queryOrIntent.toString().toLowerCase();
-
-      // First: check if it's an explicit intent string
-      switch (queryOrIntent) {
-        case "ACS_BALANCE":
-          {
-            const r = await getBalance(sessionId);
-            return {
-              success: true,
-              sessionId,
-              data: {
-                message: r.message
-              }
-            };
-          }
-        case "ACS_RECHARGE":
-          {
-            const r = await recharge(sessionId);
-            return {
-              success: true,
-              sessionId,
-              data: {
-                message: r.message
-              }
-            };
-          }
-        case "ACS_REPORT_LOST_CARD":
-          {
-            const r = await reportLostCard(sessionId);
-            return {
-              success: true,
-              sessionId,
-              data: {
-                message: r.message
-              }
-            };
-          }
-        case "ACS_ACTIVATE_CARD":
-          {
-            const r = await activateNewCard(sessionId);
-            return {
-              success: true,
-              sessionId,
-              data: {
-                message: r.message
-              }
-            };
-          }
-        case "ACS_UPDATE_CONTACT":
-          {
-            const r = await updateContactDetails(sessionId);
-            return {
-              success: true,
-              sessionId,
-              data: {
-                message: r.message
-              }
-            };
-          }
-        case "ACS_REPORT_SUSPICIOUS":
-          {
-            const r = await reportSuspiciousTransaction(sessionId);
-            return {
-              success: true,
-              sessionId,
-              data: {
-                message: r.message
-              }
-            };
-          }
-        case "ACS_MINI_STATEMENT":
-          {
-            const r = await getMiniStatement(sessionId);
-            return {
-              success: true,
-              sessionId,
-              data: {
-                message: r.message
-              }
-            };
-          }
-        case "ACS_PAY_BILL":
-          {
-            const r = await payUtilityBill(sessionId);
-            return {
-              success: true,
-              sessionId,
-              data: {
-                message: r.message
-              }
-            };
-          }
-        case "ACS_LOAN_DETAILS":
-          {
-            const r = await getLoanDetails(sessionId);
-            return {
-              success: true,
-              sessionId,
-              data: {
-                message: r.message
-              }
-            };
-          }
-        case "ACS_ESTATEMENT":
-          {
-            const r = await requestEStatement(sessionId);
-            return {
-              success: true,
-              sessionId,
-              data: {
-                message: r.message
-              }
-            };
-          }
-
-        case "AGENT_CONNECT":
-          {
-            const r = await agentConnect(sessionId);
-            return {
-              success: true,
-              sessionId,
-              data: {
-                message: r.message
-              }
-            };
-          } 
-      }
-
-      // Fallback: free-text matching (for robustness)
-      if (q.includes("balance")) {
-        const r = await getBalance(sessionId);
-        return {
-          success: r.success,
-          sessionId,
-          data: {
-            message: r.message
-          }
-        };
-      }
-
-      if (q.includes("recharge")) {
-        const amountMatch = q.match(/(\d+)/);
-        const amount = amountMatch ? Number(amountMatch[1]) : 100;
-        const r = await recharge(sessionId, amount);
-        return {
-          success: r.success,
-          sessionId,
-          data: {
-            message: r.message
-          }
-        };
-      }
-
-      if (q.includes("lost card") || q.includes("report lost") || q.includes("block card")) {
-        const r = await reportLostCard(sessionId);
-        return {
-          success: r.success,
-          sessionId,
-          data: {
-            message: r.message
-          }
-        };
-      }
-
-      if (q.includes("activate") && q.includes("card")) {
-        const r = await activateNewCard(sessionId);
-        return {
-          success: r.success,
-          sessionId,
-          data: {
-            message: r.message
-          }
-        };
-      }
-
-      if (q.includes("update contact") || q.includes("contact") ||q.includes("update") || q.includes("change contact") || q.includes("update mobile")) {
-        const r = await updateContactDetails(sessionId);
-        return {
-          success: r.success,
-          sessionId,
-          data: {
-            message: r.message
-          }
-        };
-      }
-
-      if (q.includes("suspicious") || q.includes("fraud") || q.includes("transaction")) {
-        const r = await reportSuspiciousTransaction(sessionId);
-        return {
-          success: r.success,
-          sessionId,
-          data: {
-            message: r.message
-          }
-        };
-      }
-      
-      if (q.includes("mini statement") || q.includes("last transaction")) {
-        const r = await getMiniStatement(sessionId);
-        return { success: r.success, sessionId, data: { message: r.message } };
-      }
-      
-      if (q.includes("pay bill") || q.includes("utility")) {
-        const r = await payUtilityBill(sessionId);
-        return { success: r.success, sessionId, data: { message: r.message } };
-      }
-      
-      if (q.includes("loan")) {
-        const r = await getLoanDetails(sessionId);
-        return { success: r.success, sessionId, data: { message: r.message } };
-      }
-      
-      if (q.includes("statement") && (q.includes("email") || q.includes("e-statement"))) {
-        const r = await requestEStatement(sessionId);
-        return { success: r.success, sessionId, data: { message: r.message } };
-      }
-      if ( q.includes("call") || q.includes("connect") || q.includes("support") || q.includes("representative") || q.includes("agent")) {
-        const r = await agentConnect(sessionId);
-        return { success: r.success, sessionId, data: { message: r.message } };
-      }
-
-      return {
-        success: false,
-        sessionId,
-        error: {
-          message: "Unable to map query to an action."
-        }
-      };
-    }
 
     // --- Frontend Logic ---
     document.addEventListener('DOMContentLoaded', () => {
@@ -422,31 +150,77 @@ async function agentConnect(sessionId) {
       });
 
       // STT: Use Web Speech API
+      //
+      // The recogniser fires onresult repeatedly while it refines an utterance.
+      // Submitting from inside onresult therefore sends one request per partial
+      // transcript ("I", "I want", "I want to report", ...). Instead, collect
+      // only final segments here and submit once from onend, so each press of
+      // the button produces exactly one query.
+      let recognition = null;
+      let recognizing = false;
+      let finalTranscript = '';
+
       document.getElementById('btn-stt').addEventListener('click', () => {
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         if (!SpeechRecognition) {
           alert('Speech recognition is not supported in this browser. Please use Chrome or Edge on a desktop.');
           return;
         }
-        const recognition = new SpeechRecognition();
-        recognition.lang = 'en-US';
-        recognition.interimResults = false;
-        recognition.maxAlternatives = 1;
-        recognition.onstart = () => {
-            nlpQueryInput.placeholder = "Listening...";
-        };
-        recognition.onresult = (event) => {
-          const transcript = event.results[0][0].transcript;
-          nlpQueryInput.value = transcript;
-          // Automatically send the query after successful speech recognition
-          processQuery(transcript);
-        };
-        recognition.onerror = (event) => {
-          alert('STT error: ' + event.error);
-        };
-         recognition.onend = () => {
+
+        // A second press stops the current session rather than starting a
+        // competing recogniser, which would double every event.
+        if (recognizing) {
+          recognition.stop();
+          return;
+        }
+
+        if (!recognition) {
+          recognition = new SpeechRecognition();
+          recognition.lang = 'en-US';
+          recognition.continuous = false;
+          recognition.interimResults = true;
+          recognition.maxAlternatives = 1;
+
+          recognition.onstart = () => {
+            recognizing = true;
+            finalTranscript = '';
+            nlpQueryInput.placeholder = 'Listening...';
+          };
+
+          recognition.onresult = (event) => {
+            // Start at resultIndex so already-seen segments are not re-appended.
+            let interim = '';
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+              const transcript = event.results[i][0].transcript;
+              if (event.results[i].isFinal) {
+                finalTranscript += transcript;
+              } else {
+                interim += transcript;
+              }
+            }
+            // Show progress in the input, but do not send anything yet.
+            nlpQueryInput.value = (finalTranscript + interim).trim();
+          };
+
+          recognition.onerror = (event) => {
+            // "aborted" and "no-speech" are routine when the user stops early.
+            if (event.error !== 'aborted' && event.error !== 'no-speech') {
+              alert('STT error: ' + event.error);
+            }
+          };
+
+          recognition.onend = () => {
+            recognizing = false;
             nlpQueryInput.placeholder = "e.g., What's my balance?";
-        };
+            const query = finalTranscript.trim();
+            finalTranscript = '';
+            if (query) {
+              nlpQueryInput.value = query;
+              processQuery(query);
+            }
+          };
+        }
+
         recognition.start();
       });
 
